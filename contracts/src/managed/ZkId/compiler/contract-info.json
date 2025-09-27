@@ -1,0 +1,250 @@
+{
+  "circuits": [
+    {
+      "name": "initialize",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "issueZkId",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "to",
+          "type": {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "nameHash",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 28948022309329048855892746252171976963317496166410141009864396001978282409983
+          }
+        },
+        {
+          "name": "emailHash",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 28948022309329048855892746252171976963317496166410141009864396001978282409983
+          }
+        },
+        {
+          "name": "addressHash",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 28948022309329048855892746252171976963317496166410141009864396001978282409983
+          }
+        },
+        {
+          "name": "isKYC",
+          "type": {
+            "type-name": "Boolean"
+          }
+        },
+        {
+          "name": "creditScoreValue",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 65535
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        ]
+      }
+    },
+    {
+      "name": "verifyZkId",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Boolean"
+          }
+        ]
+      }
+    },
+    {
+      "name": "getZkIdInfo",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          },
+          {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          },
+          {
+            "type-name": "Boolean"
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        ]
+      }
+    },
+    {
+      "name": "deactivateZkId",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "revealIdentityForLiquidation",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "debtCollector",
+          "type": {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Uint",
+            "maxval": 28948022309329048855892746252171976963317496166410141009864396001978282409983
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 28948022309329048855892746252171976963317496166410141009864396001978282409983
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 28948022309329048855892746252171976963317496166410141009864396001978282409983
+          },
+          {
+            "type-name": "Boolean"
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 65535
+          }
+        ]
+      }
+    },
+    {
+      "name": "checkIdentityRevealed",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Boolean"
+          },
+          {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "getCreditScore",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Uint",
+            "maxval": 65535
+          }
+        ]
+      }
+    },
+    {
+      "name": "updateCreditScore",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "newScore",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 65535
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    }
+  ],
+  "witnesses": [
+  ],
+  "contracts": [
+  ]
+}
