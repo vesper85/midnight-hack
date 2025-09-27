@@ -15,3 +15,4 @@
 
 export * as TestToken from "./managed/TestToken/contract/index.cjs";
 export * as ZkId from "./managed/ZkId/contract/index.cjs";
+export * as LiquidityPool from "./managed/LiquidityPool/contract/index.cjs";
