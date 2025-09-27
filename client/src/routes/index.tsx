@@ -1,70 +1,49 @@
 import { createFileRoute } from "@tanstack/react-router";
-import beaver from "@/assets/beaver.svg";
-import { Button } from "@/components/ui/button";
-import { hcWithType } from "server/dist/client";
-import { useConnectWallet } from "@/providers/connect-wallet-provider";
+import { CoreAssetTable } from "@/components/core-asset-table";
+import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-	component: Index,
+  component: Index,
 });
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
-
-const client = hcWithType(SERVER_URL);
-
-// type ResponseType = Awaited<ReturnType<typeof client.hello.$get>>;
-
 function Index() {
-	const { connectWallet, isConnected, isInstalled, isLoading, installWallet, disconnectWallet, address, error } = useConnectWallet();
-
-	return (
-		<div className="max-w-xl mx-auto flex flex-col gap-6 items-center justify-center min-h-screen">
-			<a
-				href="https://github.com/stevedylandev/bhvr"
-				target="_blank"
-				rel="noopener"
-			>
-				<img
-					src={beaver}
-					className="w-16 h-16 cursor-pointer"
-					alt="beaver logo"
-				/>
-			</a>
-			<h1 className="text-5xl font-black">bhvr</h1>
-			<h2 className="text-2xl font-bold">Bun + Hono + Vite + React</h2>
-			<p>A typesafe fullstack monorepo with Lace wallet</p>
-			
-			{error && (
-				<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-					{error}
-				</div>
-			)}
-
-			<div className="flex items-center gap-4">
-				{
-					isInstalled ? (
-						<Button onClick={isConnected ? disconnectWallet : connectWallet} disabled={isLoading}>
-							{isLoading ? "Connecting..." : (isConnected ? "Disconnect Lace" : "Connect Lace")}
-						</Button>
-					) : (
-						<Button onClick={installWallet}>Install Lace Wallet</Button>
-					)
-				}
-			</div>
-			
-			{isConnected && (
-				<div className="bg-gray-100 p-4 rounded-md w-full max-w-md">
-					<h3 className="font-semibold mb-2">Lace Wallet Status</h3>
-					<div className="text-sm space-y-1">
-						<div>Connected: <span className="font-mono">{isConnected.toString()}</span></div>
-						<div>Installed: <span className="font-mono">{isInstalled.toString()}</span></div>
-						<div>Loading: <span className="font-mono">{isLoading.toString()}</span></div>
-						{address && <div>Address: <span className="font-mono text-xs break-all">{address}</span></div>}
-					</div>
-				</div>
-			)}
-		</div>
-	);
+  return (
+    <section className="w-full h-full flex flex-col gap-y-6">
+      <div className="grid grid-cols-3 gap-10">
+        <div className="flex flex-col gap-y-1 bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 p-4 rounded-md">
+          <h2 className="text-lg text-muted-foreground">Total market size </h2>
+          <p className="flex items-center gap-x-0.5 text-4xl">
+            <span className="text-muted-foreground">$</span>
+            <span>100,000</span>
+          </p>
+        </div>
+        <div className="flex flex-col gap-y-1 bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 p-4 rounded-md">
+          <h2 className="text-lg text-muted-foreground">Total available</h2>
+          <p className="flex items-center gap-x-0.5 text-4xl">
+            <span className="text-muted-foreground">$</span>
+            <span>100,000</span>
+          </p>
+        </div>
+        <div className="flex flex-col gap-y-1 bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 p-4 rounded-md">
+          <h2 className="text-lg text-muted-foreground">Total borrows</h2>
+          <p className="flex items-center gap-x-0.5 text-4xl">
+            <span className="text-muted-foreground">$</span>
+            <span>100,000</span>
+          </p>
+        </div>
+      </div>
+      <div className="w-full p-4 bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 rounded-md flex flex-col gap-y-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-medium">Core Assets</h2>
+          <div className="flex items-center gap-x-2 bg-secondary p-2 rounded-md w-full max-w-sm px-4">
+            <Search className="size-4" />
+            <input className="bg-none border-none w-full foucs:border-none foucs:ring-0 focus:outline-none" placeholder="Search assets for lending or borrowing" />
+          </div>
+        </div>
+        <CoreAssetTable />
+      </div>
+    </section>
+  );
 }
 
 export default Index;

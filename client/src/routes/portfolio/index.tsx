@@ -37,7 +37,7 @@ function RouteComponent() {
           Transaction
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-10">
+      <div className="flex flex-col gap-y-10">
         <div className="flex flex-col gap-y-10">
           <div className="p-4 bg-muted min-h-[200px] rounded-md flex flex-col gap-y-4">
             <h2 className="text-xl font-medium">Your Supplies</h2>
@@ -51,11 +51,6 @@ function RouteComponent() {
               )}
             </div>
           </div>
-          <div className="rounded-lg bg-muted p-4">
-            <SupplyMarket />
-          </div>
-        </div>
-        <div className="flex flex-col gap-10">
           <div className="p-4 bg-muted flex flex-col gap-y-4 min-h-[200px]">
             <h2 className="text-xl font-medium">Your borrows </h2>
             <div className="flex flex-col gap-y-2">
@@ -69,6 +64,9 @@ function RouteComponent() {
             </div>
           </div>
           <div className="rounded-lg bg-muted p-4">
+            <SupplyMarket />
+          </div>
+<div className="rounded-lg bg-muted p-4">
             <BorrowMarket />
           </div>
         </div>
