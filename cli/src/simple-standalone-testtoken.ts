@@ -2,14 +2,16 @@
 import { createLogger } from './logger-utils.js';
 import { runTestToken } from './testtoken-cli.js';
 import { StandaloneConfig } from './config.js';
+import { loadEnvironmentConfig } from './env-config.js';
 
+const envConfig = loadEnvironmentConfig();
 const config = new StandaloneConfig();
 
-// Override with the actual container ports
-config.indexer = 'http://127.0.0.1:55006/api/v1/graphql';
-config.indexerWS = 'ws://127.0.0.1:55006/api/v1/graphql/ws';
-config.node = 'http://127.0.0.1:50964';
-config.proofServer = 'http://127.0.0.1:50963';
+// Configure with environment variables
+config.indexer = envConfig.indexerUrl;
+config.indexerWS = envConfig.indexerWS;
+config.node = envConfig.nodeUrl;
+config.proofServer = envConfig.proofServerUrl;
 
 const logger = await createLogger('./logs/simple-standalone-testtoken');
 
