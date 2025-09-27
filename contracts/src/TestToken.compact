@@ -1,0 +1,49 @@
+pragma language_version >= 0.16.0 && <= 0.17;
+
+import CompactStandardLibrary;
+
+// Simple TestToken contract similar to Counter
+export ledger tokenName: Uint<32>;
+export ledger tokenSymbol: Uint<32>; 
+export ledger totalSupply: Uint<128>;
+export ledger owner: ZswapCoinPublicKey;
+
+// Simple balance tracking for the owner
+export ledger ownerBalance: Uint<128>;
+
+// Initialize the token
+export circuit initialize(
+  name: Uint<32>,
+  symbol: Uint<32>,
+  initialSupply: Uint<128>
+): [] {
+  tokenName = disclose(name);
+  tokenSymbol = disclose(symbol);
+  totalSupply = disclose(initialSupply);
+  owner = disclose(ownPublicKey());
+  ownerBalance = disclose(initialSupply);
+}
+
+// Mint new tokens (only owner)
+export circuit mint(amount: Uint<128>): [] {
+  assert(ownPublicKey() == owner, "Only owner can mint");
+  totalSupply = disclose((totalSupply + amount) as Uint<128>);
+  ownerBalance = disclose((ownerBalance + amount) as Uint<128>);
+}
+
+// Simple faucet - anyone can get tokens
+export circuit faucet(): [] {
+  const faucetAmount = 1000 as Uint<128>;
+  assert(ownerBalance >= faucetAmount, "Insufficient tokens in contract");
+  ownerBalance = disclose((ownerBalance - faucetAmount) as Uint<128>);
+  // In a real implementation, we'd track individual balances
+  // For simplicity, we just reduce the owner balance
+}
+
+// Burn tokens from owner balance
+export circuit burn(amount: Uint<128>): [] {
+  assert(ownPublicKey() == owner, "Only owner can burn");
+  assert(ownerBalance >= amount, "Insufficient balance to burn");
+  ownerBalance = disclose((ownerBalance - amount) as Uint<128>);
+  totalSupply = disclose((totalSupply - amount) as Uint<128>);
+}
