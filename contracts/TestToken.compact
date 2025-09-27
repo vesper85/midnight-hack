@@ -1,0 +1,126 @@
+pragma language_version >= 0.16.0;
+
+import CompactStandardLibrary;
+
+module TestToken {
+  // Token metadata
+  export ledger _name: Opaque<"string">;
+  export ledger _symbol: Opaque<"string">;
+  export ledger _decimals: Uint<8>;
+  export ledger _totalSupply: Uint<128>;
+  export ledger _owner: Either<ZswapCoinPublicKey, ContractAddress>;
+  
+  // Token balances and allowances
+  export ledger _balances: Map<Either<ZswapCoinPublicKey, ContractAddress>, Uint<128>>;
+  export ledger _allowances: Map<Either<ZswapCoinPublicKey, ContractAddress>, Map<Either<ZswapCoinPublicKey, ContractAddress>, Uint<128>>>;
+
+  export circuit initialize(
+    name_: Opaque<"string">,
+    symbol_: Opaque<"string">,
+    decimals_: Uint<8>
+  ): [] {
+    _name = disclose(name_);
+    _symbol = disclose(symbol_);
+    _decimals = disclose(decimals_);
+    _totalSupply = disclose(0 as Uint<128>);
+    _owner = disclose(left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey()));
+  }
+
+  export circuit mint(
+    to: Either<ZswapCoinPublicKey, ContractAddress>,
+    amount: Uint<128>
+  ): [] {
+    const caller = ownPublicKey();
+    assert(caller == _owner.left, "TestToken: caller is not the owner");
+    const currentBalance = balanceOf(to);
+    _balances.insert(disclose(to), disclose(currentBalance + amount as Uint<128>));
+    _totalSupply = disclose(_totalSupply + amount as Uint<128>);
+  }
+
+  export circuit faucet(amount: Uint<128>): [] {
+    // Public faucet for testing - anyone can call
+    assert(amount <= 1000000 as Uint<128>, "TestToken: amount exceeds faucet limit");
+    const caller = left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey());
+    const currentBalance = balanceOf(caller);
+    _balances.insert(disclose(caller), disclose(currentBalance + amount as Uint<128>));
+    _totalSupply = disclose(_totalSupply + amount as Uint<128>);
+  }
+
+  export circuit transfer(
+    to: Either<ZswapCoinPublicKey, ContractAddress>,
+    amount: Uint<128>
+  ): Boolean {
+    const caller = left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey());
+    const fromBalance = balanceOf(caller);
+    const toBalance = balanceOf(to);
+    assert(fromBalance >= amount, "TestToken: insufficient balance");
+    _balances.insert(disclose(caller), disclose(fromBalance - amount as Uint<128>));
+    _balances.insert(disclose(to), disclose(toBalance + amount as Uint<128>));
+    return true;
+  }
+
+  export circuit transferFrom(
+    from: Either<ZswapCoinPublicKey, ContractAddress>,
+    to: Either<ZswapCoinPublicKey, ContractAddress>,
+    amount: Uint<128>
+  ): Boolean {
+    const caller = left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey());
+    const fromBalance = balanceOf(from);
+    const toBalance = balanceOf(to);
+    const allowanceAmount = allowance(from, caller);
+    
+    assert(fromBalance >= amount, "TestToken: insufficient balance");
+    assert(allowanceAmount >= amount, "TestToken: insufficient allowance");
+    
+    _balances.insert(disclose(from), disclose(fromBalance - amount as Uint<128>));
+    _balances.insert(disclose(to), disclose(toBalance + amount as Uint<128>));
+    _allowances.lookup(disclose(from)).insert(disclose(caller), disclose(allowanceAmount - amount as Uint<128>));
+    return true;
+  }
+
+  export circuit approve(
+    spender: Either<ZswapCoinPublicKey, ContractAddress>,
+    amount: Uint<128>
+  ): Boolean {
+    const caller = left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey());
+    _allowances.lookup(disclose(caller)).insert(disclose(spender), disclose(amount));
+    return true;
+  }
+
+  export circuit balanceOf(
+    account: Either<ZswapCoinPublicKey, ContractAddress>
+  ): Uint<128> {
+    return _balances.lookup(disclose(account));
+  }
+
+  export circuit allowance(
+    owner_: Either<ZswapCoinPublicKey, ContractAddress>,
+    spender: Either<ZswapCoinPublicKey, ContractAddress>
+  ): Uint<128> {
+    return _allowances.lookup(disclose(owner_)).lookup(disclose(spender));
+  }
+
+  export circuit burn(amount: Uint<128>): [] {
+    const caller = left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey());
+    const currentBalance = balanceOf(caller);
+    assert(currentBalance >= amount, "TestToken: insufficient balance to burn");
+    _balances.insert(disclose(caller), disclose(currentBalance - amount as Uint<128>));
+    _totalSupply = disclose(_totalSupply - amount as Uint<128>);
+  }
+
+  export circuit name(): Opaque<"string"> {
+    return _name;
+  }
+
+  export circuit symbol(): Opaque<"string"> {
+    return _symbol;
+  }
+
+  export circuit decimals(): Uint<8> {
+    return _decimals;
+  }
+
+  export circuit totalSupply(): Uint<128> {
+    return _totalSupply;
+  }
+}
