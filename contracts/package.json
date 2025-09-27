@@ -16,10 +16,10 @@
       }
     },
     "scripts": {
-      "compact": "source $HOME/.local/bin/env && compact compile src/TestToken.compact src/managed/TestToken && compact compile src/ZkId.compact src/managed/ZkId",
+      "compact": "source $HOME/.local/bin/env && compact compile src/TestToken.compact src/managed/TestToken && compact compile src/ZkId.compact src/managed/ZkId && compact compile src/LiquidityPool.compact src/managed/LiquidityPool",
       "test": "vitest run",
       "test:compile": "npm run compact && vitest run",
-      "build": "rm -rf dist && tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/TestToken.compact ./dist && cp ./src/ZkId.compact ./dist",
+      "build": "rm -rf dist && tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/TestToken.compact ./dist && cp ./src/ZkId.compact ./dist && cp ./src/LiquidityPool.compact ./dist",
       "lint": "eslint src",
       "typecheck": "tsc -p tsconfig.json --noEmit"
     }

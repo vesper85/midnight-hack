@@ -1,0 +1,299 @@
+pragma language_version >= 0.16.0 && <= 0.17;
+
+import CompactStandardLibrary;
+
+// Ledger state - keeping it simple like TestToken
+export ledger poolOwner: ZswapCoinPublicKey;
+export ledger testTokenContract: ZswapCoinPublicKey;
+export ledger zkIdContract: ZswapCoinPublicKey;
+
+// Pool state
+export ledger totalLiquidity: Uint<128>;
+export ledger totalBorrowed: Uint<128>;
+export ledger totalCollateral: Uint<128>;
+export ledger availableLiquidity: Uint<128>;
+export ledger totalRewards: Uint<128>;
+export ledger interestRate: Uint<32>; // basis points (500 = 5%)
+export ledger collateralRatio: Uint<32>; // 150 = 150%
+export ledger liquidationThreshold: Uint<32>; // 120 = 1.2 health factor
+export ledger isPoolActive: Boolean;
+
+// Single borrower state (simplified for demo)
+export ledger borrowerAddress: ZswapCoinPublicKey;
+export ledger borrowerCollateral: Uint<128>;
+export ledger borrowerDebt: Uint<128>;
+export ledger borrowerHealthFactor: Uint<32>;
+export ledger borrowerZkId: ZswapCoinPublicKey;
+export ledger isBorrowerActive: Boolean;
+
+// Single liquidity provider state (simplified for demo)
+export ledger providerAddress: ZswapCoinPublicKey;
+export ledger providerLiquidity: Uint<128>;
+export ledger providerRewards: Uint<128>;
+export ledger providerSharePercentage: Uint<32>;
+export ledger isProviderActive: Boolean;
+
+// Initialize the liquidity pool
+export circuit initialize(
+  testTokenAddr: ZswapCoinPublicKey,
+  zkIdAddr: ZswapCoinPublicKey
+): [] {
+  poolOwner = disclose(ownPublicKey());
+  testTokenContract = disclose(testTokenAddr);
+  zkIdContract = disclose(zkIdAddr);
+  
+  totalLiquidity = disclose(0 as Uint<128>);
+  totalBorrowed = disclose(0 as Uint<128>);
+  totalCollateral = disclose(0 as Uint<128>);
+  availableLiquidity = disclose(0 as Uint<128>);
+  totalRewards = disclose(0 as Uint<128>);
+  interestRate = disclose(500 as Uint<32>); // 5%
+  collateralRatio = disclose(150 as Uint<32>); // 150%
+  liquidationThreshold = disclose(120 as Uint<32>); // 1.2
+  isPoolActive = disclose(true);
+  
+  isBorrowerActive = disclose(false);
+  isProviderActive = disclose(false);
+}
+
+// Provide liquidity to the pool
+// NOTE: Caller must transfer tokens to pool BEFORE calling this function
+export circuit provideLiquidity(amount: Uint<128>): [] {
+  const provider = ownPublicKey();
+  
+  assert(amount > 0 as Uint<128>, "Amount must be greater than 0");
+  assert(isPoolActive == true, "Pool is not active");
+  
+  // IMPORTANT: This function assumes tokens have already been transferred
+  // to the pool contract via TestToken.transfer() before calling this function.
+  // The CLI must orchestrate: 1) TestToken.transfer(), 2) LiquidityPool.provideLiquidity()
+  
+  // Update provider state (single provider for simplicity)
+  providerAddress = disclose(provider);
+  providerLiquidity = disclose((providerLiquidity + amount) as Uint<128>);
+  providerSharePercentage = disclose(100 as Uint<32>); // 100% for single provider
+  isProviderActive = disclose(true);
+  
+  // Update pool state
+  totalLiquidity = disclose((totalLiquidity + amount) as Uint<128>);
+  availableLiquidity = disclose((availableLiquidity + amount) as Uint<128>);
+}
+
+// Stake collateral before borrowing
+export circuit stakeCollateral(
+  amount: Uint<128>,
+  borrowerZkIdAddr: ZswapCoinPublicKey
+): [] {
+  const borrower = ownPublicKey();
+  
+  assert(amount > 0 as Uint<128>, "Collateral amount must be greater than 0");
+  assert(isPoolActive == true, "Pool is not active");
+  
+  // IMPORTANT: Collateral tokens must be transferred to pool via TestToken.transfer()
+  // before calling this function. CLI must orchestrate the two-step process.
+  
+  // Update borrower state (single borrower for simplicity)
+  borrowerAddress = disclose(borrower);
+  borrowerCollateral = disclose((borrowerCollateral + amount) as Uint<128>);
+  borrowerZkId = disclose(borrowerZkIdAddr);
+  borrowerHealthFactor = disclose(999 as Uint<32>); // Very high initially
+  isBorrowerActive = disclose(true);
+  
+  // Update pool collateral
+  totalCollateral = disclose((totalCollateral + amount) as Uint<128>);
+}
+
+// Borrow from pool (requires sufficient collateral)
+export circuit borrowFromPool(amount: Uint<128>): [] {
+  const borrower = ownPublicKey();
+  
+  assert(amount > 0 as Uint<128>, "Borrow amount must be greater than 0");
+  assert(availableLiquidity >= amount, "Insufficient liquidity in pool");
+  assert(borrower == borrowerAddress, "Only staked borrower can borrow");
+  assert(isBorrowerActive == true, "No active collateral position");
+  
+  // Calculate required collateral (simplified: collateral must be 2x debt for safety)
+  const newTotalDebt = (borrowerDebt + amount) as Uint<128>;
+  const requiredCollateral = (newTotalDebt + newTotalDebt) as Uint<128>; // 2x using addition to avoid overflow
+  
+  assert(borrowerCollateral >= requiredCollateral, "Insufficient collateral");
+  
+  // Calculate new health factor (simplified: check if collateral is sufficient)
+  const collateralValue = ((borrowerCollateral as Field) * (100 as Field)) as Uint<128>;
+  const debtThreshold = ((newTotalDebt as Field) * (120 as Field)) as Uint<128>;
+  assert(collateralValue > debtThreshold, "Health factor too low");
+  
+  // Update borrower state
+  borrowerDebt = disclose(newTotalDebt);
+  borrowerHealthFactor = disclose(150 as Uint<32>); // Simplified: assume healthy if passed checks
+  
+  // Update pool state
+  totalBorrowed = disclose((totalBorrowed + amount) as Uint<128>);
+  availableLiquidity = disclose((availableLiquidity - amount) as Uint<128>);
+  
+  // Transfer borrowed tokens from pool to borrower
+  // Note: Cross-contract call: testTokenContract.transfer(borrower, amount)
+  // For now, we assume the transfer has been done externally
+}
+
+// Repay borrowed amount with interest
+export circuit repayLoan(principal: Uint<128>, interest: Uint<128>): [] {
+  const borrower = ownPublicKey();
+  
+  assert(borrower == borrowerAddress, "Only active borrower can repay");
+  assert(isBorrowerActive == true, "No active borrowing position");
+  assert(borrowerDebt >= principal, "Repayment exceeds borrowed amount");
+  
+  // Transfer repayment (principal + interest) from borrower to pool
+  const totalRepayment = (principal + interest) as Uint<128>;
+  // Note: Cross-contract call: testTokenContract.transfer(ownPublicKey(), totalRepayment)
+  // For now, we assume the transfer has been done externally
+  
+  // Update borrower state (simplified to avoid witness disclosure)
+  borrowerDebt = disclose((borrowerDebt - principal) as Uint<128>);
+  borrowerHealthFactor = disclose(150 as Uint<32>); // Assume healthy after repayment
+  
+  // Update pool state
+  totalBorrowed = disclose((totalBorrowed - principal) as Uint<128>);
+  availableLiquidity = disclose((availableLiquidity + principal) as Uint<128>);
+  totalRewards = disclose((totalRewards + interest) as Uint<128>);
+  
+  // Update provider rewards
+  providerRewards = disclose((providerRewards + interest) as Uint<128>);
+}
+
+// Claim rewards for liquidity provider
+export circuit claimRewards(): [Uint<128>] {
+  const provider = ownPublicKey();
+  
+  assert(provider == providerAddress, "Only active provider can claim");
+  assert(isProviderActive == true, "No active liquidity position");
+  assert(providerRewards > 0 as Uint<128>, "No rewards available");
+  
+  const rewardsToDistribute = providerRewards;
+  
+  // Reset provider rewards
+  providerRewards = disclose(0 as Uint<128>);
+  
+  // Update pool state
+  totalRewards = disclose((totalRewards - rewardsToDistribute) as Uint<128>);
+  
+  // Transfer rewards to liquidity provider
+  // Note: Cross-contract call: testTokenContract.transfer(provider, rewardsToDistribute)
+  // For now, we assume the transfer has been done externally
+  
+  return [rewardsToDistribute];
+}
+
+// Withdraw collateral (only if no outstanding debt)
+export circuit withdrawCollateral(amount: Uint<128>): [] {
+  const borrower = ownPublicKey();
+  
+  assert(borrower == borrowerAddress, "Only active borrower can withdraw");
+  assert(isBorrowerActive == true, "No active collateral position");
+  assert(borrowerDebt == 0 as Uint<128>, "Cannot withdraw with outstanding debt");
+  assert(borrowerCollateral >= amount, "Insufficient collateral");
+  
+  // Update borrower state
+  borrowerCollateral = disclose((borrowerCollateral - amount) as Uint<128>);
+  
+  // Update pool state
+  totalCollateral = disclose((totalCollateral - amount) as Uint<128>);
+  
+  // Transfer collateral back to borrower
+  // Note: Cross-contract call: testTokenContract.transfer(borrower, amount)
+  // For now, we assume the transfer has been done externally
+}
+
+// Liquidate unhealthy position
+export circuit liquidatePosition(liquidationAmount: Uint<128>): [Boolean] {
+  const liquidator = ownPublicKey();
+  
+  assert(isBorrowerActive == true, "No active position to liquidate");
+  assert(borrowerHealthFactor < liquidationThreshold, "Position is healthy");
+  assert(liquidationAmount <= borrowerDebt, "Liquidation exceeds debt");
+  
+  // Calculate collateral to seize (simply take extra amount)
+  const collateralToSeize = (liquidationAmount + liquidationAmount) as Uint<128>; // Just double for now
+  assert(borrowerCollateral >= collateralToSeize, "Insufficient collateral");
+  
+  // Update borrower state
+  borrowerDebt = disclose((borrowerDebt - liquidationAmount) as Uint<128>);
+  borrowerCollateral = disclose((borrowerCollateral - collateralToSeize) as Uint<128>);
+  borrowerHealthFactor = disclose(0 as Uint<32>); // Mark as liquidated
+  
+  // Update pool state
+  totalBorrowed = disclose((totalBorrowed - liquidationAmount) as Uint<128>);
+  totalCollateral = disclose((totalCollateral - collateralToSeize) as Uint<128>);
+  availableLiquidity = disclose((availableLiquidity + liquidationAmount) as Uint<128>);
+  
+  // Transfer seized collateral to liquidator
+  // Note: Cross-contract call: testTokenContract.transfer(liquidator, collateralToSeize)
+  // For now, we assume the transfer has been done externally
+  
+  // Reveal borrower identity to liquidator through zkID contract
+  // Note: Cross-contract call: zkIdContract.revealIdentityForLiquidation(liquidator)
+  // For now, we assume the identity revelation has been done externally
+  
+  return [true];
+}
+
+// Get borrower position info
+export circuit getBorrowerPosition(): [ZswapCoinPublicKey, Uint<128>, Uint<128>, Uint<32>, Boolean] {
+  return [borrowerAddress, borrowerCollateral, borrowerDebt, borrowerHealthFactor, isBorrowerActive];
+}
+
+// Get liquidity provider info
+export circuit getLiquidityProvider(): [ZswapCoinPublicKey, Uint<128>, Uint<128>, Uint<32>, Boolean] {
+  return [providerAddress, providerLiquidity, providerRewards, providerSharePercentage, isProviderActive];
+}
+
+// Get pool state
+export circuit getPoolState(): [Uint<128>, Uint<128>, Uint<128>, Uint<128>, Uint<128>, Uint<32>, Boolean] {
+  return [totalLiquidity, totalBorrowed, totalCollateral, availableLiquidity, totalRewards, interestRate, isPoolActive];
+}
+
+// Calculate current health factor (simplified)
+export circuit calculateHealthFactor(): [Uint<32>] {
+  if (borrowerDebt == 0 as Uint<128>) {
+    return [999 as Uint<32>]; // Max health factor
+  }
+  
+  // Simplified health factor calculation
+  const collateralValue = ((borrowerCollateral as Field) * (100 as Field)) as Uint<128>;
+  const debtThreshold = ((borrowerDebt as Field) * (120 as Field)) as Uint<128>;
+  
+  if (collateralValue > debtThreshold) {
+    return [150 as Uint<32>];
+  } else {
+    return [100 as Uint<32>];
+  }
+}
+
+// Update interest rates based on utilization (simplified)
+export circuit updateInterestRates(): [] {
+  if (totalLiquidity == 0 as Uint<128>) {
+    return;
+  }
+  
+  // Simplified: if borrowed > half of liquidity, increase rate
+  const halfLiquidity = ((totalLiquidity as Field) * (50 as Field)) as Uint<128>; // We'll compare borrowed*100 vs this
+  const borrowedPercent = ((totalBorrowed as Field) * (100 as Field)) as Uint<128>;
+  
+  if (borrowedPercent > halfLiquidity) {
+    interestRate = disclose(1000 as Uint<32>);
+  } else {
+    interestRate = disclose(500 as Uint<32>);
+  }
+}
+
+// Emergency functions for pool owner
+export circuit pausePool(): [] {
+  assert(ownPublicKey() == poolOwner, "Only pool owner can pause");
+  isPoolActive = disclose(false);
+}
+
+export circuit unpausePool(): [] {
+  assert(ownPublicKey() == poolOwner, "Only pool owner can unpause");
+  isPoolActive = disclose(true);
+}

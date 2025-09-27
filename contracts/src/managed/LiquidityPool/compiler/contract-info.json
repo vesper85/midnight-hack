@@ -1,0 +1,364 @@
+{
+  "circuits": [
+    {
+      "name": "initialize",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "testTokenAddr",
+          "type": {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "zkIdAddr",
+          "type": {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "provideLiquidity",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "amount",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "stakeCollateral",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "amount",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        },
+        {
+          "name": "borrowerZkIdAddr",
+          "type": {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "borrowFromPool",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "amount",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "repayLoan",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "principal",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        },
+        {
+          "name": "interest",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "claimRewards",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        ]
+      }
+    },
+    {
+      "name": "withdrawCollateral",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "amount",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "liquidatePosition",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "liquidationAmount",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Boolean"
+          }
+        ]
+      }
+    },
+    {
+      "name": "getBorrowerPosition",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 4294967295
+          },
+          {
+            "type-name": "Boolean"
+          }
+        ]
+      }
+    },
+    {
+      "name": "getLiquidityProvider",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Struct",
+            "name": "ZswapCoinPublicKey",
+            "elements": [
+              {
+                "name": "bytes",
+                "type": {
+                  "type-name": "Bytes",
+                  "length": 32
+                }
+              }
+            ]
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 4294967295
+          },
+          {
+            "type-name": "Boolean"
+          }
+        ]
+      }
+    },
+    {
+      "name": "getPoolState",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 340282366920938463463374607431768211455
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 4294967295
+          },
+          {
+            "type-name": "Boolean"
+          }
+        ]
+      }
+    },
+    {
+      "name": "calculateHealthFactor",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Uint",
+            "maxval": 4294967295
+          }
+        ]
+      }
+    },
+    {
+      "name": "updateInterestRates",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "pausePool",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "unpausePool",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    }
+  ],
+  "witnesses": [
+  ],
+  "contracts": [
+  ]
+}
