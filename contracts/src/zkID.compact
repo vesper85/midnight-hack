@@ -1,0 +1,140 @@
+pragma language_version >= 0.16.0 && <= 0.17;
+
+import CompactStandardLibrary;
+
+// Simplified zkID NFT Contract - Issues private identity tokens
+// Based on Midnight Network documentation and TestToken pattern
+
+// Ledger state - keeping it simple like TestToken
+export ledger zkIdCounter: Uint<64>; // Auto-incrementing ID counter
+export ledger isIssuerAuthorized: Boolean; // Single issuer for simplicity
+export ledger authorizedIssuer: ZswapCoinPublicKey; // The authorized issuer
+
+// Current zkID information (simplified to one active zkID)
+export ledger currentZkId: Uint<64>;
+export ledger zkIdOwner: ZswapCoinPublicKey;
+export ledger zkIdIssuer: ZswapCoinPublicKey;
+export ledger isZkIdActive: Boolean;
+export ledger zkIdIssuedAt: Uint<64>;
+
+// Private metadata (simplified)
+export ledger privateName: Uint<254>; // Hash of name for privacy
+export ledger privateEmail: Uint<254>; // Hash of email for privacy
+export ledger privateAddress: Uint<254>; // Hash of address for privacy
+export ledger isKYCVerified: Boolean;
+export ledger creditScore: Uint<16>;
+export ledger metadataTimestamp: Uint<64>;
+
+// Liquidation state
+export ledger isIdentityRevealed: Boolean;
+export ledger revealedToCollector: ZswapCoinPublicKey;
+
+// Initialize the zkID system
+export circuit initialize(): [] {
+  zkIdCounter = disclose(1 as Uint<64>);
+  isIssuerAuthorized = disclose(false);
+  authorizedIssuer = disclose(ownPublicKey());
+  isIssuerAuthorized = disclose(true);
+  
+  currentZkId = disclose(0 as Uint<64>);
+  isZkIdActive = disclose(false);
+  isIdentityRevealed = disclose(false);
+}
+
+// Issue a new zkID NFT with private metadata
+export circuit issueZkId(
+  to: ZswapCoinPublicKey,
+  nameHash: Uint<254>,
+  emailHash: Uint<254>, 
+  addressHash: Uint<254>,
+  isKYC: Boolean,
+  creditScoreValue: Uint<16>
+): [Uint<64>] {
+  const issuer = ownPublicKey();
+  assert(issuer == authorizedIssuer, "Only authorized issuer can issue zkIDs");
+  assert(isIssuerAuthorized == true, "Issuer not authorized");
+  assert(isZkIdActive == false, "zkID already exists"); // Only one zkID for simplicity
+  assert(isKYC == true, "KYC verification required");
+  
+  const newId = zkIdCounter;
+  const currentTime = 1000000 as Uint<64>; // Placeholder timestamp
+  
+  // Store zkID information
+  currentZkId = disclose(newId);
+  zkIdOwner = disclose(to);
+  zkIdIssuer = disclose(issuer);
+  isZkIdActive = disclose(true);
+  zkIdIssuedAt = disclose(currentTime);
+  
+  // Store private metadata
+  privateName = disclose(nameHash);
+  privateEmail = disclose(emailHash);
+  privateAddress = disclose(addressHash);
+  isKYCVerified = disclose(isKYC);
+  creditScore = disclose(creditScoreValue);
+  metadataTimestamp = disclose(currentTime);
+  
+  // Increment counter
+  zkIdCounter = disclose((newId + 1 as Uint<64>) as Uint<64>);
+  
+  return [newId];
+}
+
+// Verify zkID ownership and active status
+export circuit verifyZkId(): [Boolean] {
+  // Simple verification - just check if active (owner verification removed to avoid disclosure)
+  return [isZkIdActive];
+}
+
+// Get zkID information (public data only)
+export circuit getZkIdInfo(): [Uint<64>, ZswapCoinPublicKey, Boolean, Uint<64>] {
+  return [currentZkId, zkIdOwner, isZkIdActive, zkIdIssuedAt];
+}
+
+// Deactivate zkID (can be called by owner or issuer)
+export circuit deactivateZkId(): [] {
+  const caller = ownPublicKey();
+  assert(
+    (caller == zkIdOwner) || (caller == zkIdIssuer),
+    "Only owner or issuer can deactivate zkID"
+  );
+  
+  isZkIdActive = disclose(false);
+}
+
+// Reveal identity to debt collector during liquidation
+export circuit revealIdentityForLiquidation(
+  debtCollector: ZswapCoinPublicKey
+): [Uint<254>, Uint<254>, Uint<254>, Boolean, Uint<16>] {
+  // In a real implementation, this would be called by the debt contract
+  // For testing, allowing any caller
+  
+  assert(isZkIdActive == true, "zkID must be active");
+  assert(isIdentityRevealed == false, "Identity already revealed");
+  
+  // Record the liquidation reveal
+  isIdentityRevealed = disclose(true);
+  revealedToCollector = disclose(debtCollector);
+  
+  return [privateName, privateEmail, privateAddress, isKYCVerified, creditScore];
+}
+
+// Check if identity has been revealed for liquidation
+export circuit checkIdentityRevealed(): [Boolean, ZswapCoinPublicKey] {
+  return [isIdentityRevealed, revealedToCollector];
+}
+
+// Get credit score (can be called by authorized contracts)
+export circuit getCreditScore(): [Uint<16>] {
+  assert(isZkIdActive == true, "zkID must be active");
+  return [creditScore];
+}
+
+// Update credit score (issuer only)
+export circuit updateCreditScore(newScore: Uint<16>): [] {
+  const caller = ownPublicKey();
+  assert(caller == authorizedIssuer, "Only issuer can update credit score");
+  assert(isZkIdActive == true, "zkID must be active");
+  
+  creditScore = disclose(newScore);
+}
