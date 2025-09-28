@@ -5,8 +5,7 @@ export type Witnesses<T> = {
 
 export type ImpureCircuits<T> = {
   initialize(context: __compactRuntime.CircuitContext<T>,
-             testTokenAddr_0: { bytes: Uint8Array },
-             zkIdAddr_0: { bytes: Uint8Array }): __compactRuntime.CircuitResults<T, []>;
+             testTokenAddr_0: { bytes: Uint8Array }): __compactRuntime.CircuitResults<T, []>;
   provideLiquidity(context: __compactRuntime.CircuitContext<T>, amount_0: bigint): __compactRuntime.CircuitResults<T, []>;
   stakeCollateral(context: __compactRuntime.CircuitContext<T>,
                   amount_0: bigint,
@@ -50,8 +49,7 @@ export type PureCircuits = {
 
 export type Circuits<T> = {
   initialize(context: __compactRuntime.CircuitContext<T>,
-             testTokenAddr_0: { bytes: Uint8Array },
-             zkIdAddr_0: { bytes: Uint8Array }): __compactRuntime.CircuitResults<T, []>;
+             testTokenAddr_0: { bytes: Uint8Array }): __compactRuntime.CircuitResults<T, []>;
   provideLiquidity(context: __compactRuntime.CircuitContext<T>, amount_0: bigint): __compactRuntime.CircuitResults<T, []>;
   stakeCollateral(context: __compactRuntime.CircuitContext<T>,
                   amount_0: bigint,
@@ -114,6 +112,8 @@ export type Ledger = {
   readonly providerRewards: bigint;
   readonly providerSharePercentage: bigint;
   readonly isProviderActive: boolean;
+  readonly poolTokenBalance: bigint;
+  readonly userTokenBalance: bigint;
 }
 
 export type ContractReferenceLocations = any;

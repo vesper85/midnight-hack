@@ -19,22 +19,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "zkIdAddr",
-          "type": {
-            "type-name": "Struct",
-            "name": "ZswapCoinPublicKey",
-            "elements": [
-              {
-                "name": "bytes",
-                "type": {
-                  "type-name": "Bytes",
-                  "length": 32
-                }
-              }
-            ]
-          }
         }
       ],
       "result-type": {
