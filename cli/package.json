@@ -21,7 +21,11 @@
       "standalone-testtoken": "node --experimental-specifier-resolution=node --loader ts-node/esm src/standalone-testtoken.ts",
       "start-standalone-testtoken": "npm run build && npm run standalone-testtoken",
       "simple-standalone-testtoken": "node --experimental-specifier-resolution=node --loader ts-node/esm src/simple-standalone-testtoken.ts",
-      "start-simple-standalone": "npm run build && npm run simple-standalone-testtoken"
+      "start-simple-standalone": "npm run build && npm run simple-standalone-testtoken",
+      "liquidity-demo": "node --experimental-specifier-resolution=node --loader ts-node/esm src/liquidity-demo.ts",
+      "start-liquidity-demo": "npm run build && npm run liquidity-demo",
+      "simple-liquidity-demo": "node --experimental-specifier-resolution=node --loader ts-node/esm src/simple-liquidity-demo.ts",
+      "start-simple-liquidity-demo": "npm run build && npm run simple-liquidity-demo"
     },
     "dependencies": {
       "@midnight-ntwrk/contract": "*"

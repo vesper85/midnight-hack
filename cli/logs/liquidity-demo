@@ -1,0 +1,22 @@
+{"level":30,"time":1759053051945,"pid":61025,"hostname":"Mac.bbrouter","msg":"🚀 Starting Liquidity Pool Demo..."}
+{"level":30,"time":1759053051947,"pid":61025,"hostname":"Mac.bbrouter","msg":"📡 Indexer: http://127.0.0.1:55002/api/v1/graphql"}
+{"level":30,"time":1759053051947,"pid":61025,"hostname":"Mac.bbrouter","msg":"🌐 Node: http://127.0.0.1:55001"}
+{"level":30,"time":1759053051947,"pid":61025,"hostname":"Mac.bbrouter","msg":"🔐 Proof Server: http://127.0.0.1:55000"}
+{"level":30,"time":1759053051947,"pid":61025,"hostname":"Mac.bbrouter","msg":"🔑 Setting up wallet..."}
+{"level":30,"time":1759053051948,"pid":61025,"hostname":"Mac.bbrouter","msg":"🏦 Using genesis wallet with pre-funded tokens for standalone environment"}
+{"level":30,"time":1759053051948,"pid":61025,"hostname":"Mac.bbrouter","msg":"File path for save file not found, building wallet from scratch"}
+{"level":30,"time":1759053051987,"pid":61025,"hostname":"Mac.bbrouter","msg":"Your wallet seed is: 0000000000000000000000000000000000000000000000000000000000000001"}
+{"level":30,"time":1759053051987,"pid":61025,"hostname":"Mac.bbrouter","msg":"Your wallet address is: mn_shield-addr_undeployed1mjngjmnlutcq50trhcsk3hugvt9wyjnhq3c7prryd5nqmvtzva0sxqpvzkdy4k9u7eyffff53cge62tqylevq3wqps86tdjuahsquwvucsy9kffv"}
+{"level":30,"time":1759053051988,"pid":61025,"hostname":"Mac.bbrouter","msg":"Your wallet balance is: 0"}
+{"level":30,"time":1759053051988,"pid":61025,"hostname":"Mac.bbrouter","msg":"Waiting to receive tokens..."}
+{"level":30,"time":1759053051997,"pid":61025,"hostname":"Mac.bbrouter","msg":"Waiting for funds. Backend lag: 0, wallet lag: 0, transactions=0"}
+{"level":30,"time":1759053064042,"pid":61025,"hostname":"Mac.bbrouter","msg":"Waiting for funds. Backend lag: 0, wallet lag: 0, transactions=1"}
+{"level":30,"time":1759053064042,"pid":61025,"hostname":"Mac.bbrouter","msg":"Your wallet balance is: 25000000000000000"}
+{"level":30,"time":1759053064061,"pid":61025,"hostname":"Mac.bbrouter","msg":"📋 Liquidity Pool Demo Menu:"}
+{"level":30,"time":1759053064061,"pid":61025,"hostname":"Mac.bbrouter","msg":"1. Deploy all contracts (TestToken, ZkId, LiquidityPool)"}
+{"level":30,"time":1759053064061,"pid":61025,"hostname":"Mac.bbrouter","msg":"2. Provide liquidity"}
+{"level":30,"time":1759053064061,"pid":61025,"hostname":"Mac.bbrouter","msg":"3. Stake collateral and borrow"}
+{"level":30,"time":1759053064061,"pid":61025,"hostname":"Mac.bbrouter","msg":"4. Repay loan"}
+{"level":30,"time":1759053064061,"pid":61025,"hostname":"Mac.bbrouter","msg":"5. Check borrower position"}
+{"level":30,"time":1759053064061,"pid":61025,"hostname":"Mac.bbrouter","msg":"6. Exit"}
+{"level":30,"time":1759053109211,"pid":61025,"hostname":"Mac.bbrouter","msg":"👋 Goodbye!"}
