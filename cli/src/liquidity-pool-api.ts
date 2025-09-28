@@ -41,6 +41,12 @@ export type DeployedLiquidityPoolContract = {
     pausePool: () => Promise<any>;
     unpausePool: () => Promise<any>;
   };
+  // Enhanced methods with logging
+  provideLiquidityWithLogging: (amount: bigint) => Promise<any>;
+  borrowWithLogging: (amount: bigint) => Promise<any>;
+  withdrawWithLogging: (amount: bigint) => Promise<any>;
+  stakeCollateralWithLogging: (amount: bigint, borrowerZkIdAddr: string) => Promise<any>;
+  repayLoanWithLogging: (principal: bigint, interest: bigint) => Promise<any>;
 };
 
 export const deployLiquidityPool = async (
@@ -98,8 +104,66 @@ export const deployLiquidityPool = async (
   logger.info(`🔗 Init TX: ${initTxResult.public.txId}`);
   logger.info(`📦 Block Height: ${initTxResult.public.blockHeight}`);
   
-  return deployedContract as any as DeployedLiquidityPoolContract;
+  // Add enhanced logging methods
+  const enhancedContract = deployedContract as any as DeployedLiquidityPoolContract;
+  
+  enhancedContract.provideLiquidityWithLogging = async (amount: bigint) => {
+    logger.info(`💧 Providing ${amount} liquidity to pool...`);
+    const txResult = await deployedContract.callTx.provideLiquidity(amount);
+    await logTransactionHashes('Provide Liquidity', txResult.public.txId, txResult.public.blockHeight);
+    logger.info(`✅ Provided ${amount} liquidity successfully!`);
+    return txResult;
+  };
+  
+  enhancedContract.borrowWithLogging = async (amount: bigint) => {
+    logger.info(`💰 Borrowing ${amount} from pool...`);
+    const txResult = await deployedContract.callTx.borrowFromPool(amount);
+    await logTransactionHashes('Borrow', txResult.public.txId, txResult.public.blockHeight);
+    logger.info(`✅ Borrowed ${amount} successfully!`);
+    return txResult;
+  };
+  
+  enhancedContract.withdrawWithLogging = async (amount: bigint) => {
+    logger.info(`💸 Withdrawing ${amount} from pool...`);
+    const txResult = await deployedContract.callTx.withdrawCollateral(amount);
+    await logTransactionHashes('Withdraw', txResult.public.txId, txResult.public.blockHeight);
+    logger.info(`✅ Withdrew ${amount} successfully!`);
+    return txResult;
+  };
+  
+  enhancedContract.stakeCollateralWithLogging = async (amount: bigint, borrowerZkIdAddr: string) => {
+    logger.info(`🏦 Staking ${amount} collateral with ZkId: ${borrowerZkIdAddr}...`);
+    
+    // Convert string address to the required format (ZswapCoinPublicKey expects exactly 32 bytes)
+    const addressHex = borrowerZkIdAddr.replace('0x', '').trim();
+    const keyHex = addressHex.slice(-64); // Extract the last 32 bytes (64 hex characters)
+    const zkIdAddrBytes = { bytes: new Uint8Array(Buffer.from(keyHex, 'hex')) };
+    
+    const txResult = await deployedContract.callTx.stakeCollateral(amount, zkIdAddrBytes);
+    await logTransactionHashes('Stake Collateral', txResult.public.txId, txResult.public.blockHeight);
+    logger.info(`✅ Staked ${amount} collateral successfully!`);
+    return txResult;
+  };
+  
+  enhancedContract.repayLoanWithLogging = async (principal: bigint, interest: bigint) => {
+    logger.info(`💳 Repaying loan - Principal: ${principal}, Interest: ${interest}...`);
+    const txResult = await deployedContract.callTx.repayLoan(principal, interest);
+    await logTransactionHashes('Repay Loan', txResult.public.txId, txResult.public.blockHeight);
+    logger.info(`✅ Repaid loan successfully! Total: ${principal + interest}`);
+    return txResult;
+  };
+  
+  return enhancedContract;
 };
+
+// Enhanced logging function that shows both CLI and blockchain hashes
+async function logTransactionHashes(operation: string, cliTxHash: string, blockHeight: number) {
+  logger.info(`✅ ${operation} successful!`);
+  logger.info(`🔗 CLI Transaction Hash: ${cliTxHash}`);
+  logger.info(`📦 Block Height: ${blockHeight}`);
+  logger.info(`🔍 Query indexer with: ${cliTxHash}`);
+  logger.info(''); // Empty line for readability
+}
 
 export const setLogger = (_logger: Logger) => {
   logger = _logger;

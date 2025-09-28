@@ -209,8 +209,6 @@ async function logTransactionHashes(operation: string, cliTxHash: string, blockH
     logger.info(`⛓️  Blockchain Hash: ${blockchainHash}`);
     logger.info(`🔍 Query indexer with: ${blockchainHash}`);
     logger.info(`🔍 Query by CLI hash: identifiers contains "${cliTxHash}"`);
-  } else {
-    logger.warn(`⚠️  Could not find blockchain hash for CLI hash: ${cliTxHash}`);
   }
   
   logger.info(''); // Empty line for readability
