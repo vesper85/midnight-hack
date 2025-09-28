@@ -1394,7 +1394,7 @@ class Contract {
                                                                             alignment: _descriptor_3.alignment() }).encode() } },
                      { ins: { cached: false, n: 1 } },
                      { ins: { cached: true, n: 1 } }]);
-    const tmp_10 = 0n;
+    const tmp_10 = 200000n;
     Contract._query(context,
                     partialProofData,
                     [

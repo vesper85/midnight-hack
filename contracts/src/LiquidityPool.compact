@@ -59,7 +59,7 @@ export circuit initialize(
   
   // Initialize token balances
   poolTokenBalance = disclose(0 as Uint<128>);
-  userTokenBalance = disclose(0 as Uint<128>);
+  userTokenBalance = disclose(200000 as Uint<128>);
 }
 
 // Provide liquidity to the pool with actual token transfer
