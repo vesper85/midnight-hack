@@ -13,6 +13,7 @@ interface TokenInfo {
   totalSupply?: string;
   owner?: string;
   error?: string;
+  logo: string
 }
 
 // Set network ID for server-side
@@ -175,9 +176,9 @@ app.get('/api/token-pools', async (c) => {
 
       const getTokenLogo = (symbol: string) => {
         const logoMap: Record<string, string> = {
-          '2001': '/eth.png', // USDC - using ETH logo as placeholder
+          '2001': 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=040', // USDC - using ETH logo as placeholder
           '2002': '/eth.png', // WETH
-          '2003': '/eth.png', // WBTC - using ETH logo as placeholder
+          '2003': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=040', // WBTC - using ETH logo as placeholder
         };
         return logoMap[symbol] || '/eth.png';
       };

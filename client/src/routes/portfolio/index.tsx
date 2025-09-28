@@ -22,7 +22,7 @@ function RouteComponent() {
             <h2 className="text-sm text-muted-foreground">Net Worth</h2>
             <p className="flex items-center gap-x-0.5 text-xl">
               <span className="text-muted-foreground">$</span>
-              <span>100,000</span>
+              <span>1000</span>
             </p>
           </div>
           <div className="flex flex-col gap-y-1">

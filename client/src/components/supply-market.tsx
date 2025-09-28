@@ -3,6 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
+import { useTokenPools } from "@/hooks/useTokenPools"
+import { useMemo } from "react"
+import type { TokenPoolInfo } from "@/lib/token-api"
 
 // Types for supply market data (user's wallet assets)
 export type SupplyMarketAsset = {
@@ -17,75 +20,62 @@ export type SupplyMarketAsset = {
   canSupply: boolean
 }
 
-// Sample supply market data - user's wallet assets available for supply
-const supplyMarketData: SupplyMarketAsset[] = [
-  {
-    id: "eth-wallet",
-    asset: "ETH",
-    icon: "🔷",
-    walletBalance: "2.45 ETH",
-    walletBalanceUsd: "$977.65",
-    price: "$398.96",
-    supplyApy: "0.06%",
-    collateralFactor: "75%",
-    canSupply: true,
-  },
-  {
-    id: "usdc-wallet",
-    asset: "USDC",
-    icon: "💰",
-    walletBalance: "1,250.00 USDC",
-    walletBalanceUsd: "$1,237.50",
-    price: "$0.99",
-    supplyApy: "0.98%",
-    collateralFactor: "75%",
-    canSupply: true,
-  },
-  {
-    id: "dai-wallet",
-    asset: "DAI",
-    icon: "🟡",
-    walletBalance: "750.50 DAI",
-    walletBalanceUsd: "$757.51",
-    price: "$1.01",
-    supplyApy: "4.73%",
-    collateralFactor: "75%",
-    canSupply: true,
-  },
-  {
-    id: "link-wallet",
-    asset: "LINK",
-    icon: "🔗",
-    walletBalance: "25.00 LINK",
-    walletBalanceUsd: "$243.25",
-    price: "$9.73",
-    supplyApy: "1.24%",
-    collateralFactor: "65%",
-    canSupply: true,
-  },
-  {
-    id: "wbtc-wallet",
-    asset: "WBTC",
-    icon: "🟠",
-    walletBalance: "0.05 WBTC",
-    walletBalanceUsd: "$584.50",
-    price: "$11.69k",
-    supplyApy: "0.00%",
-    collateralFactor: "60%",
-    canSupply: true,
-  },
-  {
-    id: "usdt-wallet",
-    asset: "USDT",
-    icon: "💲",
-    walletBalance: "500.00 USDT",
-    walletBalanceUsd: "$500.00",
-    price: "$1.00",
-    supplyApy: "2.29%",
-    collateralFactor: "0%",
-    canSupply: false, // Cannot be used as collateral
-  },
-]
+function formatTokenPoolForSupplyMarket(tokenPool: TokenPoolInfo): SupplyMarketAsset {
+  // Calculate a mock price based on total supplied (for demonstration)
+  const mockPrice = tokenPool.totalSupplied > 0 ? (tokenPool.totalSupplied * 0.1).toFixed(2) : "1.00"
+  
+  // Get collateral factor based on token type (mock values)
+  const getCollateralFactor = (symbol: string) => {
+    switch (symbol.toUpperCase()) {
+      case 'ETH':
+      case 'WETH':
+        return "75%"
+      case 'USDC':
+      case 'USDT':
+      case 'DAI':
+        return "75%"
+      case 'WBTC':
+        return "60%"
+      case 'LINK':
+        return "65%"
+      default:
+        return "50%"
+    }
+  }
+
+  // Get icon based on token symbol
+  const getTokenIcon = (symbol: string) => {
+    switch (symbol.toUpperCase()) {
+      case 'ETH':
+      case 'WETH':
+        return "🔷"
+      case 'USDC':
+        return "💰"
+      case 'USDT':
+        return "💲"
+      case 'DAI':
+        return "🟡"
+      case 'WBTC':
+        return "🟠"
+      case 'LINK':
+        return "🔗"
+      default:
+        return "🪙"
+    }
+  }
+
+  return {
+    id: `${tokenPool.address}-wallet`,
+    asset: tokenPool.symbol,
+    icon: getTokenIcon(tokenPool.symbol),
+    walletBalance: `0.00 ${tokenPool.symbol}`, // Set wallet balance to 0 as requested
+    walletBalanceUsd: "$0.00", // Set USD balance to 0 as requested
+    price: `$${mockPrice}`,
+    supplyApy: `${tokenPool.supplyApy.toFixed(2)}%`,
+    collateralFactor: getCollateralFactor(tokenPool.symbol),
+    canSupply: true, // All tokens can be supplied by default
+  }
+}
 
 // Columns for supply market
 const supplyMarketColumns: ColumnDef<SupplyMarketAsset>[] = [
@@ -152,12 +142,49 @@ const supplyMarketColumns: ColumnDef<SupplyMarketAsset>[] = [
 ]
 
 export function SupplyMarket() {
+  const { data: tokenPools, isLoading, error } = useTokenPools()
+
+  // Transform token pool data for supply market table
+  const supplyMarketData = useMemo(() => {
+    if (!tokenPools) return []
+    return tokenPools.map(formatTokenPoolForSupplyMarket)
+  }, [tokenPools])
+
+  // Calculate total wallet balance (always $0.00 since all wallet balances are 0)
+  const totalWalletBalance = "$0.00"
+
+  if (isLoading) {
+    return (
+      <div className="w-full space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Supply Market</h2>
+        </div>
+        <div className="rounded-lg border p-8 text-center">
+          <p className="text-muted-foreground">Loading token pools...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Supply Market</h2>
+        </div>
+        <div className="rounded-lg border p-8 text-center">
+          <p className="text-red-500">Error loading token pools</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Supply Market</h2>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>Total Wallet Balance: <span className="font-medium text-foreground">$4,300.41</span></span>
+          <span>Total Wallet Balance: <span className="font-medium text-foreground">{totalWalletBalance}</span></span>
         </div>
       </div>
       <div className="rounded-lg border">
