@@ -139,4 +139,7 @@ async function initializeTokensAndPools() {
 }
 
 // Run the initialization
-initializeTokensAndPools().catch(console.error);
+initializeTokensAndPools().catch((error) => {
+  console.error('Error during initialization:', error);
+  process.exit(1);
+});

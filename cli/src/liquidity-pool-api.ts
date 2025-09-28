@@ -25,7 +25,7 @@ export type DeployedLiquidityPoolContract = {
     };
   };
   callTx: {
-    initialize: (testTokenAddr: { bytes: Uint8Array }, zkIdAddr: { bytes: Uint8Array }) => Promise<any>;
+    initialize: (testTokenAddr: { bytes: Uint8Array }) => Promise<any>;
     provideLiquidity: (amount: bigint) => Promise<any>;
     stakeCollateral: (amount: bigint, borrowerZkIdAddr: string) => Promise<any>;
     borrowFromPool: (amount: bigint) => Promise<any>;
@@ -46,8 +46,7 @@ export type DeployedLiquidityPoolContract = {
 export const deployLiquidityPool = async (
   wallet: Wallet & Resource,
   config: Config,
-  testTokenAddress: string,
-  zkIdAddress: string = "0x0000000000000000000000000000000000000000000000000000000000000000" // Default placeholder
+  testTokenAddress: string
 ): Promise<DeployedLiquidityPoolContract> => {
   logger.info('Deploying LiquidityPool contract...');
   
@@ -82,13 +81,19 @@ export const deployLiquidityPool = async (
   // Initialize the pool with the TestToken contract address
   logger.info('Initializing LiquidityPool...');
   logger.info(`🪙 TestToken Address: ${testTokenAddress}`);
-  logger.info(`🆔 ZkId Address: ${zkIdAddress}`);
   
-  // Convert string addresses to the required format
-  const testTokenAddrBytes = { bytes: new Uint8Array(Buffer.from(testTokenAddress.replace('0x', ''), 'hex')) };
-  const zkIdAddrBytes = { bytes: new Uint8Array(Buffer.from(zkIdAddress.replace('0x', ''), 'hex')) };
+  // Convert string address to the required format (ZswapCoinPublicKey expects exactly 32 bytes)
+  const addressHex = testTokenAddress.replace('0x', '').trim();
+  logger.info(`🔍 Address hex length: ${addressHex.length}, expected: 64`);
   
-  const initTxResult = await deployedContract.callTx.initialize(testTokenAddrBytes, zkIdAddrBytes);
+  // Extract the last 32 bytes (64 hex characters) to get the actual public key
+  const keyHex = addressHex.slice(-64);
+  logger.info(`🔍 Using last 64 chars as key: ${keyHex}`);
+  
+  const testTokenAddrBytes = { bytes: new Uint8Array(Buffer.from(keyHex, 'hex')) };
+  logger.info(`🔍 Converted to ${testTokenAddrBytes.bytes.length} bytes`);
+  
+  const initTxResult = await deployedContract.callTx.initialize(testTokenAddrBytes);
   logger.info('✅ LiquidityPool initialization successful!');
   logger.info(`🔗 Init TX: ${initTxResult.public.txId}`);
   logger.info(`📦 Block Height: ${initTxResult.public.blockHeight}`);
