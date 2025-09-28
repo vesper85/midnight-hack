@@ -39,7 +39,7 @@ function RouteComponent() {
       </div>
       <div className="flex flex-col gap-y-10">
         <div className="flex flex-col gap-y-10">
-          <div className="p-4 bg-muted min-h-[200px] rounded-md flex flex-col gap-y-4">
+          <div className="p-4 bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 min-h-[200px] rounded-md flex flex-col gap-y-4">
             <h2 className="text-xl font-medium">Your Supplies</h2>
             <div className="flex flex-col gap-y-2">
               {supplies?.length != 0 ? (
@@ -51,7 +51,7 @@ function RouteComponent() {
               )}
             </div>
           </div>
-          <div className="p-4 bg-muted flex flex-col gap-y-4 min-h-[200px]">
+          <div className="p-4 bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 flex flex-col gap-y-4 min-h-[200px]">
             <h2 className="text-xl font-medium">Your borrows </h2>
             <div className="flex flex-col gap-y-2">
               {borrows?.length == 0 ? (
@@ -63,10 +63,10 @@ function RouteComponent() {
               )}
             </div>
           </div>
-          <div className="rounded-lg bg-muted p-4">
+          <div className="rounded-lg bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 p-4">
             <SupplyMarket />
           </div>
-<div className="rounded-lg bg-muted p-4">
+          <div className="rounded-lg bg-gradient-to-b from-secondary/20 via-25% via-secondary/40 to-secondary/70 p-4">
             <BorrowMarket />
           </div>
         </div>
