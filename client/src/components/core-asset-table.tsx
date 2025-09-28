@@ -1,8 +1,10 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
+import { Link } from "@tanstack/react-router"
+import { cn } from "@/lib/utils"
 
 // Asset data interface
 interface Asset {
@@ -226,16 +228,13 @@ const columns: ColumnDef<Asset>[] = [
     cell: ({ row }) => {
       const asset = row.original
       return (
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => {
-            // TODO: Navigate to asset detail page when route is created
-            console.log(`View details for ${asset.name} (${asset.symbol})`)
-          }}
+        <Link
+          to={'/$id'}
+          params={{ id: asset.id }}
+          className={cn(buttonVariants({ variant: "outline" }))}
         >
           Details
-        </Button>
+        </Link>
       )
     },
   },
