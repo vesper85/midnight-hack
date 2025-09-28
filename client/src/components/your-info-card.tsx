@@ -1,5 +1,7 @@
 import { Wallet } from "lucide-react";
 import { Button } from "./ui/button";
+import { MarketModal } from "./market-modal";
+import { asset } from "@/routes/$id";
 
 export function YourInfoCard() {
   return (
@@ -22,7 +24,7 @@ export function YourInfoCard() {
           <p>
             1000 <span className="text-muted-foreground">USDC</span>
           </p>
-          <Button variant={"secondary"}>Supply</Button>
+          <MarketModal defaultTab="lend" trigger={<Button variant={"secondary"}>Supply</Button>} asset={asset as any} />
         </div>
       </div>
       <div className="flex flex-col gap-y-0.5">
@@ -31,7 +33,7 @@ export function YourInfoCard() {
           <p>
             1000 <span className="text-muted-foreground">USDC</span>
           </p>
-          <Button variant={"secondary"}>Borrow</Button>
+          <MarketModal defaultTab="borrow" trigger={<Button variant={"secondary"}>Borrow</Button>} asset={asset as any} />
         </div>
       </div>
     </div>

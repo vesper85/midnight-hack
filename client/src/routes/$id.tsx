@@ -4,7 +4,7 @@ import { YourInfoCard } from "@/components/your-info-card";
 import { cn } from "@/lib/utils";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-const asset = {
+export const asset = {
   id: "eth",
   name: "Ethereum",
   symbol: "ETH",
