@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { ApiResponse } from "shared/dist";
+import tokenRoutes from "./token-routes";
 
 export const app = new Hono()
 
@@ -17,6 +18,9 @@ export const app = new Hono()
 	};
 
 	return c.json(data, { status: 200 });
-});
+})
+
+// Mount token routes
+.route("/", tokenRoutes);
 
 export default app;

@@ -5,142 +5,9 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import { Link } from "@tanstack/react-router"
 import { cn } from "@/lib/utils"
-
-// Asset data interface
-interface Asset {
-  id: string
-  name: string
-  symbol: string
-  logo: string
-  totalSupplied: number
-  supplyApy: number
-  totalBorrowed: number
-  borrowedApy: number
-}
-
-// Mock data for demonstration
-const mockAssets: Asset[] = [
-  {
-    id: "eth",
-    name: "Ethereum",
-    symbol: "ETH",
-    logo: "/eth.png",
-    totalSupplied: 125000000,
-    supplyApy: 3.25,
-    totalBorrowed: 85000000,
-    borrowedApy: 5.75,
-  },
-  {
-    id: "btc",
-    name: "Bitcoin",
-    symbol: "BTC",
-    logo: "/btc.png",
-    totalSupplied: 2100000,
-    supplyApy: 2.85,
-    totalBorrowed: 1500000,
-    borrowedApy: 4.95,
-  },
-  {
-    id: "usdc",
-    name: "USD Coin",
-    symbol: "USDC",
-    logo: "/usdc.png",
-    totalSupplied: 500000000,
-    supplyApy: 4.15,
-    totalBorrowed: 350000000,
-    borrowedApy: 6.25,
-  },
-  {
-    id: "dai",
-    name: "Dai Stablecoin",
-    symbol: "DAI",
-    logo: "/dai.png",
-    totalSupplied: 200000000,
-    supplyApy: 3.95,
-    totalBorrowed: 140000000,
-    borrowedApy: 5.85,
-  },
-  {
-    id: "usdt",
-    name: "Tether USD",
-    symbol: "USDT",
-    logo: "/usdt.png",
-    totalSupplied: 750000000,
-    supplyApy: 3.75,
-    totalBorrowed: 520000000,
-    borrowedApy: 6.05,
-  },
-  {
-    id: "link",
-    name: "Chainlink",
-    symbol: "LINK",
-    logo: "/link.png",
-    totalSupplied: 45000000,
-    supplyApy: 2.65,
-    totalBorrowed: 28000000,
-    borrowedApy: 4.45,
-  },
-  {
-    id: "uni",
-    name: "Uniswap",
-    symbol: "UNI",
-    logo: "/uni.png",
-    totalSupplied: 35000000,
-    supplyApy: 3.15,
-    totalBorrowed: 22000000,
-    borrowedApy: 5.35,
-  },
-  {
-    id: "aave",
-    name: "Aave",
-    symbol: "AAVE",
-    logo: "/aave.png",
-    totalSupplied: 12000000,
-    supplyApy: 2.95,
-    totalBorrowed: 8500000,
-    borrowedApy: 4.75,
-  },
-  {
-    id: "comp",
-    name: "Compound",
-    symbol: "COMP",
-    logo: "/comp.png",
-    totalSupplied: 8000000,
-    supplyApy: 2.45,
-    totalBorrowed: 5500000,
-    borrowedApy: 4.25,
-  },
-  {
-    id: "mkr",
-    name: "Maker",
-    symbol: "MKR",
-    logo: "/mkr.png",
-    totalSupplied: 950000,
-    supplyApy: 1.85,
-    totalBorrowed: 650000,
-    borrowedApy: 3.65,
-  },
-  {
-    id: "snx",
-    name: "Synthetix",
-    symbol: "SNX",
-    logo: "/snx.png",
-    totalSupplied: 18000000,
-    supplyApy: 3.45,
-    totalBorrowed: 12000000,
-    borrowedApy: 5.95,
-  },
-  {
-    id: "crv",
-    name: "Curve DAO Token",
-    symbol: "CRV",
-    logo: "/crv.png",
-    totalSupplied: 25000000,
-    supplyApy: 2.75,
-    totalBorrowed: 16000000,
-    borrowedApy: 4.55,
-  },
-]
+import { useTokenPools } from "@/hooks/useTokenPools"
+import { type TokenPoolInfo } from "@/lib/token-api"
+import { Loader2 } from "lucide-react"
 
 // Format large numbers for display
 function formatNumber(num: number): string {
@@ -157,7 +24,7 @@ function formatNumber(num: number): string {
 }
 
 // Column definitions
-const columns: ColumnDef<Asset>[] = [
+const columns: ColumnDef<TokenPoolInfo>[] = [
   {
     accessorKey: "asset",
     header: "Asset",
@@ -172,11 +39,15 @@ const columns: ColumnDef<Asset>[] = [
             onError={(e) => {
               // Fallback to a placeholder if image fails to load
               const target = e.target as HTMLImageElement
+              target.src = '/eth.png'
             }}
           />
           <div>
             <div className="font-medium text-foreground">{asset.name}</div>
             <div className="text-sm text-muted-foreground">{asset.symbol}</div>
+            {asset.error && (
+              <div className="text-xs text-red-500">Error: {asset.error}</div>
+            )}
           </div>
         </div>
       )
@@ -241,7 +112,32 @@ const columns: ColumnDef<Asset>[] = [
 ]
 
 export function CoreAssetTable() {
-  return (
-      <DataTable columns={columns} data={mockAssets} />
-  )
+  const { data: tokenPools, isLoading, error } = useTokenPools()
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading token pools...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-8 text-red-500">
+        Error loading token pools: {error.message}
+      </div>
+    )
+  }
+
+  if (!tokenPools || tokenPools.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8 text-muted-foreground">
+        No token pools found
+      </div>
+    )
+  }
+
+  return <DataTable columns={columns} data={tokenPools} />
 }
