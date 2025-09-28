@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 interface LogoProps {
   className?: string;
   width?: number;
@@ -5,8 +7,51 @@ interface LogoProps {
 }
 
 export function Logo({ className = "", width = 432, height = 596 }: LogoProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    function handleMouseMove(event: MouseEvent) {
+      setMousePosition({ x: event.clientX, y: event.clientY });
+    }
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Calculate pupil offset for both eyes (using transform instead of absolute position)
+  function calculatePupilOffset(eyeCenterX: number, eyeCenterY: number) {
+    if (!svgRef.current) return { x: 0, y: 0 };
+
+    const svgRect = svgRef.current.getBoundingClientRect();
+
+    // Convert eye coordinates to screen coordinates
+    const eyeScreenX = svgRect.left + (eyeCenterX / 432) * svgRect.width;
+    const eyeScreenY = svgRect.top + (eyeCenterY / 596) * svgRect.height;
+
+    // Calculate direction from eye to mouse
+    const deltaX = mousePosition.x - eyeScreenX;
+    const deltaY = mousePosition.y - eyeScreenY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    // Limit pupil movement within the eye (radius constraint)
+    const maxPupilDistance = 8; // Maximum distance pupil can move from center
+    const pupilDistance = Math.min(distance / 10, maxPupilDistance);
+
+    // Calculate pupil offset from center
+    const angle = Math.atan2(deltaY, deltaX);
+    const offsetX = Math.cos(angle) * pupilDistance;
+    const offsetY = Math.sin(angle) * pupilDistance;
+
+    return { x: offsetX, y: offsetY };
+  }
+
+  const leftPupilOffset = calculatePupilOffset(118, 174);
+  const rightPupilOffset = calculatePupilOffset(312, 174);
+
   return (
     <svg
+      ref={svgRef}
       width={width}
       height={height}
       viewBox="0 0 432 596"
@@ -24,6 +69,27 @@ export function Logo({ className = "", width = 432, height = 596 }: LogoProps) {
       />
       <circle cx="312" cy="174" r="27" fill="white" />
       <circle cx="118" cy="174" r="27" fill="white" />
+      {/* Animated pupils */}
+      <circle 
+        cx="118" 
+        cy="174" 
+        r="8" 
+        fill="#171718"
+        style={{
+          transform: `translate(${leftPupilOffset.x}px, ${leftPupilOffset.y}px)`,
+          transition: "transform 0.1s ease-out"
+        }}
+      />
+      <circle 
+        cx="312" 
+        cy="174" 
+        r="8" 
+        fill="#171718"
+        style={{
+          transform: `translate(${rightPupilOffset.x}px, ${rightPupilOffset.y}px)`,
+          transition: "transform 0.1s ease-out"
+        }}
+      />
       <path
         d="M431 0C432.077 3.24713 431.924 5.09431 430.812 8.30859C430.53 9.1315 430.247 9.9544 429.956 10.8022C429.64 11.6719 429.325 12.5415 429 13.4375C428.677 14.3355 428.355 15.2335 428.023 16.1587C421.714 33.2667 411.59 47.8954 399 61C398.108 61.9552 397.216 62.9104 396.297 63.8945C375.674 85.5974 347.974 97.6642 320.836 109.219C305.771 115.638 291.934 123.929 279 134C278.148 134.66 277.296 135.32 276.418 136C264.494 145.497 253.139 155.757 244 168C243.513 168.639 243.026 169.278 242.525 169.936C234.786 180.12 228.108 190.55 222.141 201.86C220.146 205.602 218.07 209.299 216 213C215.34 213 214.68 213 214 213C213.749 212.508 213.499 212.016 213.241 211.51C187.662 161.535 153.038 128.711 101.664 106.223C76.989 95.4078 55.5913 84.6704 36 66C35.2807 65.3336 34.5614 64.6671 33.8203 63.9805C27.806 58.2439 22.9109 51.6725 18 45C17.4547 44.2846 16.9095 43.5691 16.3477 42.832C8.79744 32.3538 1.39843 17.9919 0 5C0.33 4.01 0.66 3.02 1 2C1.66645 2.49629 2.33289 2.99258 3.01953 3.50391C9.51974 8.29497 16.1479 12.7328 23 17C24.2064 17.7685 25.4121 18.5381 26.6172 19.3086C36.5301 25.6192 46.6747 31.3949 57 37C57.9832 37.5367 58.9665 38.0735 59.9795 38.6265C71.3133 44.8103 82.6725 50.9082 94.25 56.625C143.442 80.9496 188.781 110.197 215 160C217.235 157.188 219.064 154.241 220.852 151.129C238.236 121.03 263.926 96.5688 293.948 79.1953C296.439 77.7444 298.909 76.2611 301.383 74.7812C315.239 66.5702 329.353 59.1341 343.823 52.0745C352.804 47.6818 361.538 42.9714 370.218 38.0105C372.746 36.577 375.299 35.1912 377.855 33.8086C396.312 23.7837 414.245 12.6906 431 0Z"
         fill="#4A4C50"
