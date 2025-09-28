@@ -1,22 +1,21 @@
-# bhvr 🦫
+# Strix 🦅
 
-![cover](https://cdn.stevedylan.dev/ipfs/bafybeievx27ar5qfqyqyud7kemnb5n2p4rzt2matogi6qttwkpxonqhra4)
+A privacy-preserving DeFi lending protocol built on Midnight Network that enables private lending and borrowing while maintaining user anonymity through zero-knowledge proofs.
 
-A full-stack TypeScript monorepo starter with shared types, using Bun, Hono, Vite, and React.
+## What is Strix?
 
-## Why bhvr?
+Strix is a decentralized lending protocol with privacy-first design that bridges traditional DeFi transparency requirements with user privacy needs. Built on Midnight Network's zero-knowledge capabilities, Strix enables users to access lending services without compromising their financial privacy.
 
-While there are plenty of existing app building stacks out there, many of them are either bloated, outdated, or have too much of a vendor lock-in. bhvr is built with the opinion that you should be able to deploy your client or server in any environment while also keeping type safety.
+## Key Features
 
-## Features
-
-- **Full-Stack TypeScript**: End-to-end type safety between client and server
-- **Shared Types**: Common type definitions shared between client and server
-- **Monorepo Structure**: Organized as a workspaces-based monorepo with Turbo for build orchestration
-- **Modern Stack**:
+- **Private Identity System (zkID)**: Privacy-preserving identity tokens with selective revelation
+- **Customizable Liquidity Pools**: Private lending/borrowing with interest earning capabilities
+- **Privacy-Preserving Transactions**: All operations maintain user anonymity through zk-proofs
+- **Debt Auction Mechanism**: Failed repayments trigger debt auctions with controlled identity disclosure
+- **Modern Development Stack**:
+  - [Midnight Network](https://midnight.network) for zero-knowledge blockchain infrastructure
   - [Bun](https://bun.sh) as the JavaScript runtime and package manager
   - [Hono](https://hono.dev) as the backend framework
-  - [Vite](https://vitejs.dev) for frontend bundling
   - [React](https://react.dev) for the frontend UI
   - [Turbo](https://turbo.build) for monorepo build orchestration and caching
 
@@ -24,241 +23,189 @@ While there are plenty of existing app building stacks out there, many of them a
 
 ```
 .
-├── client/               # React frontend
-├── server/               # Hono backend
+├── contracts/            # Midnight Network smart contracts (Compact language)
+│   ├── src/
+│   │   ├── TestToken.compact      # ERC-20-like token contract
+│   │   ├── LiquidityPool.compact  # Lending/borrowing pool contract
+│   │   └── zkID.compact           # Privacy-preserving identity contract
+│   └── managed/          # Compiled contract artifacts
+├── cli/                  # Command-line interface for contract interaction
+│   ├── src/
+│   │   ├── testtoken-api.ts       # TestToken contract API
+│   │   ├── liquidity-pool-api.ts  # LiquidityPool contract API
+│   │   ├── initialize-tokens-and-pools.ts  # Deployment scripts
+│   │   └── query-contract-state.ts # Contract state querying
+│   └── standalone.yml    # Docker configuration for Midnight Network
+├── client/               # React frontend (UI mockups)
+├── server/               # Hono backend API
 ├── shared/               # Shared TypeScript definitions
-│   └── src/types/        # Type definitions used by both client and server
-├── package.json          # Root package.json with workspaces
 └── turbo.json            # Turbo configuration for build orchestration
 ```
 
-### Server
+### Smart Contracts
 
-bhvr uses Hono as a backend API for its simplicity and massive ecosystem of plugins. If you have ever used Express then it might feel familiar. Declaring routes and returning data is easy.
+Strix implements three core smart contracts using Midnight Network's Compact language:
 
-```
-server
-├── bun.lock
-├── package.json
-├── README.md
-├── src
-│   └── index.ts
-└── tsconfig.json
-```
+#### TestToken Contract
+Basic ERC-20-like functionality with privacy features:
+- Mint, burn, and faucet operations
+- Private balance tracking
+- Owner-based access control
 
-```typescript src/index.ts
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import type { ApiResponse } from 'shared/dist'
+#### LiquidityPool Contract
+Comprehensive lending/borrowing system:
+- Liquidity provision and withdrawal
+- Collateral staking and borrowing
+- Health factor calculations and liquidation
+- Interest rate management
+- Reward distribution
 
-const app = new Hono()
+#### zkID Contract
+Privacy-preserving identity management:
+- KYC verification without revealing personal data
+- Credit score tracking
+- Selective identity revelation during liquidation
+- Authorized issuer management
 
-app.use(cors())
+### CLI Interface
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
-
-app.get('/hello', async (c) => {
-
-  const data: ApiResponse = {
-    message: "Hello BHVR!",
-    success: true
-  }
-
-  return c.json(data, { status: 200 })
-})
-
-export default app
-```
-
-If you wanted to add a database to Hono you can do so with a multitude of Typescript libraries like [Supabase](https://supabase.com), or ORMs like [Drizzle](https://orm.drizzle.team/docs/get-started) or [Prisma](https://www.prisma.io/orm)
-
-### Client
-
-bhvr uses Vite + React Typescript template, which means you can build your frontend just as you would with any other React app. This makes it flexible to add UI components like [shadcn/ui](https://ui.shadcn.com) or routing using [React Router](https://reactrouter.com/start/declarative/installation).
+The command-line interface provides comprehensive contract management:
 
 ```
-client
-├── eslint.config.js
-├── index.html
-├── package.json
-├── public
-│   └── vite.svg
-├── README.md
-├── src
-│   ├── App.css
-│   ├── App.tsx
-│   ├── assets
-│   ├── index.css
-│   ├── main.tsx
-│   └── vite-env.d.ts
-├── tsconfig.app.json
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
+cli/
+├── src/
+│   ├── testtoken-api.ts       # TestToken contract interactions
+│   ├── liquidity-pool-api.ts  # LiquidityPool contract interactions
+│   ├── initialize-tokens-and-pools.ts  # Deployment automation
+│   └── query-contract-state.ts # Contract state inspection
+└── standalone.yml             # Docker configuration
 ```
 
-```typescript src/App.tsx
-import { useState } from 'react'
-import beaver from './assets/beaver.svg'
-import { ApiResponse } from 'shared'
-import './App.css'
+### Frontend (In Development)
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000"
-
-function App() {
-  const [data, setData] = useState<ApiResponse | undefined>()
-
-  async function sendRequest() {
-    try {
-      const req = await fetch(`${SERVER_URL}/hello`)
-      const res: ApiResponse = await req.json()
-      setData(res)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  return (
-    <>
-      <div>
-        <a href="https://github.com/stevedylandev/bhvr" target="_blank">
-          <img src={beaver} className="logo" alt="beaver logo" />
-        </a>
-      </div>
-      <h1>bhvr</h1>
-      <h2>Bun + Hono + Vite + React</h2>
-      <p>A typesafe fullstack monorepo</p>
-      <div className="card">
-        <button onClick={sendRequest}>
-          Call API
-        </button>
-        {data && (
-          <pre className='response'>
-            <code>
-            Message: {data.message} <br />
-            Success: {data.success.toString()}
-            </code>
-          </pre>
-        )}
-      </div>
-      <p className="read-the-docs">
-        Click the beaver to learn more
-      </p>
-    </>
-  )
-}
-
-export default App
-```
-
-### Shared
-
-The Shared package is used for anything you want to share between the Server and Client. This could be types or libraries that you use in both environments.
+The React frontend provides a modern web interface for interacting with Strix:
 
 ```
-shared
-├── package.json
-├── src
-│   ├── index.ts
-│   └── types
-│       └── index.ts
-└── tsconfig.json
+client/
+├── src/
+│   ├── components/
+│   │   ├── supply-market.tsx    # Supply market interface
+│   │   ├── borrow-market.tsx    # Borrow market interface
+│   │   ├── core-asset-table.tsx # Asset listing
+│   │   └── ui/                  # Reusable UI components
+│   ├── routes/
+│   │   ├── index.tsx           # Main dashboard
+│   │   ├── portfolio/          # User portfolio
+│   │   └── transactions/       # Transaction history
+│   └── lib/
+│       └── token-api.ts        # Frontend API integration
 ```
 
-Inside the `src/index.ts` we export any of our code from the folders so it's usable in other parts of the monorepo
-
-```typescript
-export * from "./types"
-```
-
-By running `bun run dev` or `bun run build` it will compile and export the packages from `shared` so it can be used in either `client` or `server`
-
-```typescript
-import { ApiResponse } from 'shared'
-```
+**Note**: The frontend currently contains UI mockups and is not yet connected to the CLI backend. Integration is planned for future development.
 
 ## Getting Started
 
+### Prerequisites
+
+- **Bun**: Version 1.2.4+ (package manager and runtime)
+- **Docker & Docker Compose**: For running Midnight Network standalone environment
+- **Midnight Compact Compiler**: For smart contract compilation
+
 ### Quick Start
 
-You can start a new bhvr project using the [CLI](https://github.com/stevedylandev/create-bhvr)
-
+1. **Install Dependencies**
 ```bash
-bun create bhvr
-```
-
-### Installation
-
-```bash
-# Install dependencies for all workspaces
 bun install
 ```
 
-### Development
+2. **Start Midnight Network Environment**
+```bash
+cd cli
+docker compose -f standalone.yml up -d
+```
+
+3. **Compile Smart Contracts**
+```bash
+cd contracts
+bun run compact
+```
+
+4. **Deploy Tokens and Liquidity Pools**
+```bash
+cd cli
+bun run src/initialize-tokens-and-pools.ts
+```
+
+5. **Interact with Contracts**
+```bash
+# Deploy new token
+bun run src/simple-standalone-testtoken.ts
+
+# Query contract states
+bun run src/query-contract-state.ts
+
+# List all tokens
+bun run src/list-test-tokens.ts
+```
+
+### Development Commands
 
 ```bash
-# Run all workspaces in development mode with Turbo
+# Run all services in development mode
 bun run dev
 
-# Or run individual workspaces directly
-bun run dev:client    # Run the Vite dev server for React
-bun run dev:server    # Run the Hono backend
-```
-
-### Building
-
-```bash
-# Build all workspaces with Turbo
+# Build all packages
 bun run build
 
-# Or build individual workspaces directly
-bun run build:client  # Build the React frontend
-bun run build:server  # Build the Hono backend
-```
-
-### Additional Commands
-
-```bash
-# Lint all workspaces
+# Lint code
 bun run lint
 
-# Type check all workspaces
+# Type check
 bun run type-check
-
-# Run tests across all workspaces
-bun run test
 ```
 
-### Deployment
+## Architecture Overview
 
-Deplying each piece is very versatile and can be done numerous ways, and exploration into automating these will happen at a later date. Here are some references in the meantime.
+Strix implements a privacy-preserving DeFi protocol with the following key components:
 
-**Client**
-- [Orbiter](https://orbiter.host)
-- [GitHub Pages](https://vite.dev/guide/static-deploy.html#github-pages)
-- [Netlify](https://vite.dev/guide/static-deploy.html#netlify)
-- [Cloudflare Pages](https://vite.dev/guide/static-deploy.html#cloudflare-pages)
+### Privacy Model
+- **Default Privacy**: All transactions and balances are private by default
+- **Selective Revelation**: Identity is only revealed during liquidation events
+- **Zero-Knowledge Proofs**: Verify financial positions without revealing amounts
+- **Controlled Disclosure**: Authorized entities can access specific information when needed
 
-**Server**
-- [Cloudflare Worker](https://gist.github.com/stevedylandev/4aa1fc569bcba46b7169193c0498d0b3)
-- [Bun](https://hono.dev/docs/getting-started/bun)
-- [Node.js](https://hono.dev/docs/getting-started/nodejs)
+### Contract Interactions
+1. **Token Deployment**: Deploy TestToken contracts with private balances
+2. **Pool Creation**: Create LiquidityPool contracts linked to tokens
+3. **Identity Issuance**: Issue zkID tokens for KYC verification
+4. **Lending Operations**: Provide liquidity and earn interest privately
+5. **Borrowing Operations**: Stake collateral and borrow with private amounts
+6. **Liquidation Process**: Reveal identity only to debt collectors during default
 
-## Type Sharing
+## Key Features Implemented
 
-Types are automatically shared between the client and server thanks to the shared package and TypeScript path aliases. You can import them in your code using:
+✅ **Smart Contracts**: TestToken, LiquidityPool, and zkID contracts  
+✅ **CLI Interface**: Comprehensive command-line tools for contract interaction  
+✅ **Contract Deployment**: Automated token and pool initialization  
+✅ **State Querying**: Contract state inspection and transaction history  
+✅ **Privacy Protection**: Zero-knowledge proof integration  
+🚧 **Frontend Integration**: Web interface (in development)  
+🚧 **Multi-Asset Support**: Cross-asset collateralization (planned)  
 
-```typescript
-import { ApiResponse } from 'shared/types';
-```
+## Documentation
+
+- [Running Guide](./RUNNING.md) - Detailed setup and usage instructions
+- [Token Pool Initialization](./cli/TOKEN_POOL_INITIALIZATION.md) - Contract deployment guide
+- [Query Tokens](./cli/QUERY_TOKENS.md) - Contract state querying documentation
 
 ## Learn More
 
+- [Midnight Network Documentation](https://docs.midnight.network)
+- [Compact Language Reference](https://docs.midnight.network/compact)
+- [Zero-Knowledge Proofs Guide](https://docs.midnight.network/zk-proofs)
 - [Bun Documentation](https://bun.sh/docs)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://react.dev/learn)
 - [Hono Documentation](https://hono.dev/docs)
-- [Turbo Documentation](https://turbo.build/docs)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+
+## License
+
+MIT License - see [LICENSE](./LICENSE) for details.
