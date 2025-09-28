@@ -21,7 +21,8 @@
       "standalone-testtoken": "node --experimental-specifier-resolution=node --loader ts-node/esm src/standalone-testtoken.ts",
       "start-standalone-testtoken": "npm run build && npm run standalone-testtoken",
       "simple-standalone-testtoken": "node --experimental-specifier-resolution=node --loader ts-node/esm src/simple-standalone-testtoken.ts",
-      "start-simple-standalone": "npm run build && npm run simple-standalone-testtoken"
+      "start-simple-standalone": "npm run build && npm run simple-standalone-testtoken",
+      "initialize-tokens-and-pools": "node --experimental-specifier-resolution=node --loader ts-node/esm src/initialize-tokens-and-pools.ts"
     },
     "dependencies": {
       "@midnight-ntwrk/contract": "*"
