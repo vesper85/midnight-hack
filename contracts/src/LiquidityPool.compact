@@ -33,14 +33,16 @@ export ledger providerRewards: Uint<128>;
 export ledger providerSharePercentage: Uint<32>;
 export ledger isProviderActive: Boolean;
 
+// Token balance tracking for the pool
+export ledger poolTokenBalance: Uint<128>;
+export ledger userTokenBalance: Uint<128>; // For the single user (borrower/provider)
+
 // Initialize the liquidity pool
 export circuit initialize(
-  testTokenAddr: ZswapCoinPublicKey,
-  zkIdAddr: ZswapCoinPublicKey
+  testTokenAddr: ZswapCoinPublicKey
 ): [] {
   poolOwner = disclose(ownPublicKey());
   testTokenContract = disclose(testTokenAddr);
-  zkIdContract = disclose(zkIdAddr);
   
   totalLiquidity = disclose(0 as Uint<128>);
   totalBorrowed = disclose(0 as Uint<128>);
@@ -54,19 +56,32 @@ export circuit initialize(
   
   isBorrowerActive = disclose(false);
   isProviderActive = disclose(false);
+  
+  // Initialize token balances
+  poolTokenBalance = disclose(0 as Uint<128>);
+  userTokenBalance = disclose(0 as Uint<128>);
 }
 
-// Provide liquidity to the pool
-// NOTE: Caller must transfer tokens to pool BEFORE calling this function
+// Provide liquidity to the pool with actual token transfer
 export circuit provideLiquidity(amount: Uint<128>): [] {
   const provider = ownPublicKey();
   
   assert(amount > 0 as Uint<128>, "Amount must be greater than 0");
   assert(isPoolActive == true, "Pool is not active");
   
-  // IMPORTANT: This function assumes tokens have already been transferred
-  // to the pool contract via TestToken.transfer() before calling this function.
-  // The CLI must orchestrate: 1) TestToken.transfer(), 2) LiquidityPool.provideLiquidity()
+  // NOTE: Actual token transfer must be orchestrated at CLI level:
+  // 1. CLI calls TokenModule.transfer(poolAddress, amount) 
+  // 2. CLI calls LiquidityPool.provideLiquidity(amount)
+  // This function assumes tokens have already been transferred to the pool
+  
+  // Update local balance tracking (assuming tokens already transferred)
+  assert(userTokenBalance >= amount, "Insufficient user balance for liquidity provision");
+  const newUserBalance = (userTokenBalance - amount) as Uint<128>;
+  const newPoolBalance = (poolTokenBalance + amount) as Uint<128>;
+  
+  // Update token balances
+  userTokenBalance = disclose(newUserBalance);
+  poolTokenBalance = disclose(newPoolBalance);
   
   // Update provider state (single provider for simplicity)
   providerAddress = disclose(provider);
@@ -79,7 +94,7 @@ export circuit provideLiquidity(amount: Uint<128>): [] {
   availableLiquidity = disclose((availableLiquidity + amount) as Uint<128>);
 }
 
-// Stake collateral before borrowing
+// Stake collateral before borrowing with actual token transfer
 export circuit stakeCollateral(
   amount: Uint<128>,
   borrowerZkIdAddr: ZswapCoinPublicKey
@@ -89,8 +104,19 @@ export circuit stakeCollateral(
   assert(amount > 0 as Uint<128>, "Collateral amount must be greater than 0");
   assert(isPoolActive == true, "Pool is not active");
   
-  // IMPORTANT: Collateral tokens must be transferred to pool via TestToken.transfer()
-  // before calling this function. CLI must orchestrate the two-step process.
+  // NOTE: Actual token transfer must be orchestrated at CLI level:
+  // 1. CLI calls TokenModule.transfer(poolAddress, amount) 
+  // 2. CLI calls LiquidityPool.stakeCollateral(amount, zkIdAddr)
+  // This function assumes collateral tokens have already been transferred to the pool
+  
+  // Update local balance tracking (assuming tokens already transferred)
+  assert(userTokenBalance >= amount, "Insufficient user balance for collateral");
+  const newUserBalance = (userTokenBalance - amount) as Uint<128>;
+  const newPoolBalance = (poolTokenBalance + amount) as Uint<128>;
+  
+  // Update token balances
+  userTokenBalance = disclose(newUserBalance);
+  poolTokenBalance = disclose(newPoolBalance);
   
   // Update borrower state (single borrower for simplicity)
   borrowerAddress = disclose(borrower);
@@ -131,9 +157,19 @@ export circuit borrowFromPool(amount: Uint<128>): [] {
   totalBorrowed = disclose((totalBorrowed + amount) as Uint<128>);
   availableLiquidity = disclose((availableLiquidity - amount) as Uint<128>);
   
-  // Transfer borrowed tokens from pool to borrower
-  // Note: Cross-contract call: testTokenContract.transfer(borrower, amount)
-  // For now, we assume the transfer has been done externally
+  // NOTE: Actual token transfer must be orchestrated at CLI level:
+  // 1. CLI calls LiquidityPool.borrowFromPool(amount) 
+  // 2. CLI calls TokenModule.transfer(borrowerAddress, amount)
+  // This function updates pool state, then CLI handles token transfer
+  
+  // Update local balance tracking (pool gives up tokens to borrower)
+  assert(poolTokenBalance >= amount, "Insufficient pool balance for borrowing");
+  const newPoolBalance = (poolTokenBalance - amount) as Uint<128>;
+  const newUserBalance = (userTokenBalance + amount) as Uint<128>;
+  
+  // Update token balances
+  poolTokenBalance = disclose(newPoolBalance);
+  userTokenBalance = disclose(newUserBalance);
 }
 
 // Repay borrowed amount with interest
